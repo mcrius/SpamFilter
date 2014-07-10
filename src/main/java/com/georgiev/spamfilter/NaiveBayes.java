@@ -181,7 +181,7 @@ public class NaiveBayes {
             String[] split = line.split(" ");
             if (split[1].trim().equalsIgnoreCase(f.getName())) {
 //                System.out.println("File :" + f.getName() + "Class : " + split[0]);
-                if (split[0].trim().equals("1")) {
+                if (split[0].trim().equals("0")) {
                     return Result.HAM;
                 } else {
                     return Result.SPAM;

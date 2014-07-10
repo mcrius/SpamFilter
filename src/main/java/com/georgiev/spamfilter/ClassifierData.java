@@ -5,10 +5,13 @@
  */
 package com.georgiev.spamfilter;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 
-public class ClassifierData {
+public class ClassifierData implements Serializable{
+    public static final long serialVersionUID = 1L;
+
     
     private HashMap<String, Long> hamMap;
     private HashMap<String, Long> spamMap;

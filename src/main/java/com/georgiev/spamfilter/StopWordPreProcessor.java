@@ -30,19 +30,26 @@ public class StopWordPreProcessor implements PreProcessor {
         this.file = file;
     }
 
+    public StopWordPreProcessor(List<String> words) {
+        this.stopWords = words;
+        this.file = null;
+    }
+
     @Override
     public MessageModel process(MessageModel model) {
-        stopWords = new ArrayList<>();
-        try {
-            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                String line = br.readLine();
-                while (line != null) {
-                    stopWords.add(line.trim());
-                    line = br.readLine();
+        if (stopWords == null || stopWords.isEmpty()) {
+            stopWords = new ArrayList<>();
+            try {
+                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                    String line = br.readLine();
+                    while (line != null) {
+                        stopWords.add(line.trim());
+                        line = br.readLine();
+                    }
                 }
+            } catch (IOException ex) {
+                Logger.getLogger(StopWordPreProcessor.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } catch (IOException ex) {
-            Logger.getLogger(StopWordPreProcessor.class.getName()).log(Level.SEVERE, null, ex);
         }
         String body = model.getBody();
         if (body != null) {

@@ -2,9 +2,11 @@ package com.georgiev.spamfilter;
 
 import com.georgiev.spamfilter.model.MessageModel;
 import com.georgiev.spamfilter.util.SpamFilterUtils;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import javax.mail.Message;
@@ -42,14 +44,26 @@ public class NaiveBayes {
                     if (mm.getTitle() != null) {
                         String[] words = mm.getTitle().split("\\s+");
                         for (String w : words) {
-                            if (hamMap.containsKey(w)) {
-                                hamMap.replace(w, hamMap.get(w) + 1);
+                            if (hamMap.containsKey(w.trim())) {
+                                hamMap.replace(w.trim(), hamMap.get(w.trim()) + 1);
                             } else {
-                                hamMap.put(w, 1L);
+                                hamMap.put(w.trim(), 1L);
                             }
                         }
-                        hamCount++;
+
                     }
+                    if (mm.getBody() != null) {
+                        String[] words = mm.getBody().split("\\s+");
+                        for (String w : words) {
+                            if (hamMap.containsKey(w.trim())) {
+                                hamMap.replace(w.trim(), hamMap.get(w.trim()) + 1);
+                            } else {
+                                hamMap.put(w.trim(), 1L);
+                            }
+                        }
+//                        hamCount++;
+                    }
+                    hamCount++;
                 }
 
             }
@@ -61,14 +75,26 @@ public class NaiveBayes {
                     if (mm.getTitle() != null) {
                         String[] words = mm.getTitle().split("\\s+");
                         for (String w : words) {
-                            if (spamMap.containsKey(w)) {
-                                spamMap.replace(w, spamMap.get(w) + 1);
+                            if (spamMap.containsKey(w.trim())) {
+                                spamMap.replace(w.trim(), spamMap.get(w.trim()) + 1);
                             } else {
-                                spamMap.put(w, 1L);
+                                spamMap.put(w.trim(), 1L);
                             }
                         }
-                        spamCount++;
+//                        spamCount++;
                     }
+                    if (mm.getBody() != null) {
+                        String[] words = mm.getBody().split("\\s+");
+                        for (String w : words) {
+                            if (spamMap.containsKey(w.trim())) {
+                                spamMap.replace(w.trim(), spamMap.get(w.trim()) + 1);
+                            } else {
+                                spamMap.put(w.trim(), 1L);
+                            }
+                        }
+//                        hamCount++;
+                    }
+                    spamCount++;
                 }
 
             }
@@ -76,6 +102,94 @@ public class NaiveBayes {
         this.data = new ClassifierData(hamMap, spamMap, spamCount, hamCount);
         System.out.println(hamCount);
         System.out.println(spamCount);
+        File f = new File("data.dat");
+        SpamFilterUtils.writeDataToFile(f, this.data);
     }
 
+    public Result classify(MessageModel mm) {
+        String[] titleWords = null;
+        String[] bodyWords = null;
+        if (mm.getTitle() != null) {
+            titleWords = mm.getTitle().trim().split("\\s+");
+        }
+        if (mm.getBody() != null) {
+            bodyWords = mm.getBody().trim().split("\\s+");
+        }
+        //ham
+        double h = Math.log((double)data.getHamCount() / (double)(data.getHamCount() + data.getSpamCount()));
+//        System.out.println("H: " + h);
+        long hamWordCount = 0l;
+        for (Long l : data.getHamMap().values()) {
+            hamWordCount += l;
+        }
+        if (titleWords != null) {
+            for (String w : titleWords) {
+                h = h + Math.log(2*(data.getHamMap().get(w.trim()) != null ? (double)data.getHamMap().get(w.trim()) : 0.000001d) / (double)hamWordCount);
+            }
+        }
+        if (bodyWords != null) {
+            for (String bw : bodyWords) {
+                h = h + Math.log((data.getHamMap().get(bw.trim()) != null ? (double)data.getHamMap().get(bw.trim()) : 0.000001d) / (double)hamWordCount);
+            }
+        }
+
+        double p = Math.log((double)data.getSpamCount() / (double)(data.getHamCount() + data.getSpamCount()));
+//        System.out.println("P: " + p);
+        long spamWordCount = 0l;
+        for (Long l : data.getSpamMap().values()) {
+            spamWordCount += l;
+        }
+        if (titleWords != null) {
+            for (String w : titleWords) {
+                p = p + Math.log(2*(data.getSpamMap().get(w.trim()) != null ? (double)data.getSpamMap().get(w.trim()) : 0.000001d) / (double)spamWordCount);
+            }
+        }
+        if (bodyWords != null) {
+             for (String bw : bodyWords) {
+                p = p + Math.log((data.getSpamMap().get(bw.trim()) != null ? (double) data.getSpamMap().get(bw.trim()) : 0.000001d) / (double)spamWordCount);
+            }
+        }
+//        System.out.println("Spam: " + p);
+//        System.out.println("Ham: " + h);
+
+//        return (Math.abs(p) > Math.abs(h)) ? Result.SPAM : Result.HAM;
+        return (p > h) ? Result.SPAM : Result.HAM;
+    }
+
+    public void test(File folder, File stopWords) throws MessagingException, FileNotFoundException, IOException {
+        int correct = 0;
+        File[] files = folder.listFiles();
+        StopWordPreProcessor swpp = new StopWordPreProcessor(stopWords);
+        for (File file : files) {
+            Message m = new MimeMessage(null, new FileInputStream(file));
+            MessageModel mm = SpamFilterUtils.getModelFromMimeMessage(m);
+            if (mm != null) {
+                mm = swpp.process(mm);
+                Result result = classify(mm);
+                if (result.equals(getResultForFile(file))) {
+                    correct++;
+                }
+            }
+        }
+        System.out.println("Precision: " + ( (double)correct / (double)files.length) * 100 + "%");
+    }
+
+    private Result getResultForFile(File f) throws FileNotFoundException, IOException {
+        BufferedReader br = new BufferedReader(new FileReader(new File("D:\\text mining\\SPAMTrain.txt")));
+        String line = br.readLine();
+        while (line != null) {
+            String[] split = line.split(" ");
+            if (split[1].trim().equalsIgnoreCase(f.getName())) {
+//                System.out.println("File :" + f.getName() + "Class : " + split[0]);
+                if (split[0].trim().equals("1")) {
+                    return Result.HAM;
+                } else {
+                    return Result.SPAM;
+                }
+
+            }
+            line = br.readLine();
+        }
+        return null;
+    }
 }

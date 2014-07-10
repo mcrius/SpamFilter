@@ -4,15 +4,12 @@ import com.georgiev.spamfilter.ClassifierData;
 import com.georgiev.spamfilter.model.MessageModel;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -52,7 +49,7 @@ public class SpamFilterUtils {
         return data;
     }
 
-    public static void readDataFromFile(File file, ClassifierData data) throws IOException {
+    public static void writeDataToFile(File file, ClassifierData data) throws IOException {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
             oos.writeObject(data);
         }

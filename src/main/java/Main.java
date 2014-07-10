@@ -1,5 +1,7 @@
 
+import com.georgiev.spamfilter.ClassifierData;
 import com.georgiev.spamfilter.NaiveBayes;
+import com.georgiev.spamfilter.util.SpamFilterUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,8 +22,12 @@ import java.nio.file.StandardCopyOption;
 public class Main {
 
     public static void main(String[] args) throws Exception{
-        NaiveBayes naiveBayes = new NaiveBayes();
-        naiveBayes.train(new File("D:\\text mining\\spam"), new File("D:\\text mining\\ham"), new File("D:\\text mining\\stopwords.txt"));
+//        NaiveBayes naiveBayes = new NaiveBayes();
+//        naiveBayes.train(new File("D:\\text mining\\spam"), new File("D:\\text mining\\ham"), new File("D:\\text mining\\stopwords.txt"));
+//        System.exit(1);
+        ClassifierData data = SpamFilterUtils.readDataFromFile(new File("data.dat"));
+        NaiveBayes naiveBayes = new NaiveBayes(data);
+        naiveBayes.test(new File("D:\\text mining\\test"), new File("D:\\text mining\\stopwords.txt"));
     }
 //    public static void main(String[] args) throws FileNotFoundException, IOException {
 //        File f = new File("D:\\text mining\\SPAMTrain.txt");

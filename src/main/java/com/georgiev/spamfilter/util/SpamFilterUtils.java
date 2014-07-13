@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import javax.mail.Address;
 import javax.mail.MessagingException;
@@ -53,6 +54,28 @@ public class SpamFilterUtils {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
             oos.writeObject(data);
         }
+    }
+
+    public static HashMap<String, Long> updateMap(HashMap<String, Long> map, String[] title, String[] body) {
+        if (title != null) {
+            for (String w : title) {
+                if (map.containsKey(w.trim())) {
+                    map.replace(w.trim(), map.get(w.trim()) + 1);
+                } else {
+                    map.put(w.trim(), 1L);
+                }
+            }
+        }
+        if (body != null) {
+            for (String w : body) {
+                if (map.containsKey(w.trim())) {
+                    map.replace(w.trim(), map.get(w.trim()) + 1);
+                } else {
+                    map.put(w.trim(), 1L);
+                }
+            }
+        }
+        return map;
     }
 
     /**

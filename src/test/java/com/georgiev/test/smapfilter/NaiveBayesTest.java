@@ -6,6 +6,7 @@
 package com.georgiev.test.smapfilter;
 
 import com.georgiev.spamfilter.ClassifierData;
+import com.georgiev.spamfilter.ClassifierType;
 import com.georgiev.spamfilter.NaiveBayes;
 import com.georgiev.spamfilter.Result;
 import com.georgiev.spamfilter.StopWordPreProcessor;
@@ -64,7 +65,7 @@ public class NaiveBayesTest {
             File testFolder = new File("D:\\text mining\\test");
             File stopWordsFile = new File("D:\\text mining\\stopwords.txt");
             ClassifierData data = SpamFilterUtils.readDataFromFile(new File("data.dat"));
-            NaiveBayes naiveBayes = new NaiveBayes(data);
+            NaiveBayes naiveBayes = new NaiveBayes(data, ClassifierType.NEVER_TRUST);
             int correct = 0;
             File[] files = testFolder.listFiles();
             StopWordPreProcessor swpp = new StopWordPreProcessor(stopWordsFile);
@@ -104,4 +105,3 @@ public class NaiveBayesTest {
         return null;
     }
 }
-

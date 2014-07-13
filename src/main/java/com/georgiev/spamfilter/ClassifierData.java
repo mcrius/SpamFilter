@@ -1,24 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.georgiev.spamfilter;
 
 import java.io.Serializable;
 import java.util.HashMap;
 
+public class ClassifierData implements Serializable {
 
-public class ClassifierData implements Serializable{
     public static final long serialVersionUID = 1L;
 
-    
     private HashMap<String, Long> hamMap;
     private HashMap<String, Long> spamMap;
     private Long spamCount;
     private Long hamCount;
-    
-    
 
     public ClassifierData() {
     }
@@ -61,8 +53,5 @@ public class ClassifierData implements Serializable{
     public void setHamCount(Long hamCount) {
         this.hamCount = hamCount;
     }
-    
 
-    
-    
 }

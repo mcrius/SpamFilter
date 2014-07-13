@@ -160,9 +160,11 @@ public class NaiveBayes {
                 double hamProb = ham / spam + ham;
                 if (spamProb > 0.95d && result == Result.SPAM) {
                     data.setSpamMap(SpamFilterUtils.updateMap(data.getSpamMap(), titleWords, bodyWords));
+                    data.setSpamCount(data.getSpamCount() + 1);
                 } else {
                     if (hamProb > 0.95d && result == Result.HAM) {
                         data.setHamMap(SpamFilterUtils.updateMap(data.getHamMap(), titleWords, bodyWords));
+                        data.setHamCount(data.getHamCount() + 1);
                     }
                 }
                 break;
@@ -170,8 +172,10 @@ public class NaiveBayes {
             case ALWAYS_TRUST: {
                 if (result == Result.SPAM) {
                     data.setSpamMap(SpamFilterUtils.updateMap(data.getSpamMap(), titleWords, bodyWords));
+                    data.setSpamCount(data.getSpamCount() + 1);
                 } else {
                     data.setHamMap(SpamFilterUtils.updateMap(data.getHamMap(), titleWords, bodyWords));
+                    data.setHamCount(data.getHamCount() + 1);
                 }
                 break;
             }

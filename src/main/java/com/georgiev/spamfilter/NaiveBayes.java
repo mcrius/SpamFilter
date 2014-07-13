@@ -156,40 +156,5 @@ public class NaiveBayes {
         return (p > h) ? Result.SPAM : Result.HAM;
     }
 
-    public void test(File folder, File stopWords) throws MessagingException, FileNotFoundException, IOException {
-        int correct = 0;
-        File[] files = folder.listFiles();
-        StopWordPreProcessor swpp = new StopWordPreProcessor(stopWords);
-        for (File file : files) {
-            Message m = new MimeMessage(null, new FileInputStream(file));
-            MessageModel mm = SpamFilterUtils.getModelFromMimeMessage(m);
-            if (mm != null) {
-                mm = swpp.process(mm);
-                Result result = classify(mm);
-                if (result.equals(getResultForFile(file))) {
-                    correct++;
-                }
-            }
-        }
-        System.out.println("Precision: " + ( (double)correct / (double)files.length) * 100 + "%");
-    }
-
-    private Result getResultForFile(File f) throws FileNotFoundException, IOException {
-        BufferedReader br = new BufferedReader(new FileReader(new File("D:\\text mining\\SPAMTrain.txt")));
-        String line = br.readLine();
-        while (line != null) {
-            String[] split = line.split(" ");
-            if (split[1].trim().equalsIgnoreCase(f.getName())) {
-//                System.out.println("File :" + f.getName() + "Class : " + split[0]);
-                if (split[0].trim().equals("0")) {
-                    return Result.HAM;
-                } else {
-                    return Result.SPAM;
-                }
-
-            }
-            line = br.readLine();
-        }
-        return null;
-    }
+    
 }

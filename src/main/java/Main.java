@@ -2,13 +2,7 @@
 import com.georgiev.spamfilter.ClassifierData;
 import com.georgiev.spamfilter.NaiveBayes;
 import com.georgiev.spamfilter.util.SpamFilterUtils;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -27,7 +21,7 @@ public class Main {
 //        System.exit(1);
         ClassifierData data = SpamFilterUtils.readDataFromFile(new File("data.dat"));
         NaiveBayes naiveBayes = new NaiveBayes(data);
-        naiveBayes.test(new File("D:\\text mining\\test"), new File("D:\\text mining\\stopwords.txt"));
+//        naiveBayes.test();
     }
 //    public static void main(String[] args) throws FileNotFoundException, IOException {
 //        File f = new File("D:\\text mining\\SPAMTrain.txt");

@@ -1,5 +1,6 @@
 package com.georgiev.spamfilter;
 
+import com.georgiev.spamfilter.interfaces.PreProcessor;
 import com.georgiev.spamfilter.model.MessageModel;
 import com.georgiev.spamfilter.util.SpamFilterUtils;
 import java.io.File;
@@ -7,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -15,15 +17,18 @@ public class NaiveBayes {
 
     private ClassifierData data;
     private final ClassifierType classfierType;
+    private List<PreProcessor> pp;
 
-    public NaiveBayes(ClassifierData data, ClassifierType type) {
+    public NaiveBayes(ClassifierData data, ClassifierType type, List<PreProcessor> pp) {
         this.data = data;
         this.classfierType = type;
+        this.pp = pp;
     }
 
-    public NaiveBayes(ClassifierType type) {
+    public NaiveBayes(ClassifierType type, List<PreProcessor> pp) {
         this.data = null;
         this.classfierType = type;
+        this.pp = pp;
     }
 
     public void train(File spamFolder, File hamFolder, File stopWords) throws MessagingException, FileNotFoundException, IOException {
@@ -34,14 +39,15 @@ public class NaiveBayes {
         if (!spamFolder.isDirectory() && !hamFolder.isDirectory()) {
             throw new IllegalArgumentException("Files must point to a folder");
         } else {
-            StopWordPreProcessor swpp = new StopWordPreProcessor(stopWords);
             File[] spamFiles = spamFolder.listFiles();
             File[] hamFiles = hamFolder.listFiles();
             for (File file : hamFiles) {
                 Message m = new MimeMessage(null, new FileInputStream(file));
                 MessageModel mm = SpamFilterUtils.getModelFromMimeMessage(m);
                 if (mm != null) {
-                    mm = swpp.process(mm);
+                    for (PreProcessor p : pp) {
+                        mm = p.process(mm);
+                    }
                     if (mm.getTitle() != null) {
                         String[] words = mm.getTitle().split("\\s+");
                         for (String w : words) {
@@ -72,7 +78,9 @@ public class NaiveBayes {
                 Message m = new MimeMessage(null, new FileInputStream(file));
                 MessageModel mm = SpamFilterUtils.getModelFromMimeMessage(m);
                 if (mm != null) {
-                    mm = swpp.process(mm);
+                    for (PreProcessor p : pp) {
+                        mm = p.process(mm);
+                    }
                     if (mm.getTitle() != null) {
                         String[] words = mm.getTitle().split("\\s+");
                         for (String w : words) {
@@ -108,6 +116,9 @@ public class NaiveBayes {
     }
 
     public Result classify(MessageModel mm) {
+        for (PreProcessor p : pp) {
+            mm = p.process(mm);
+        }
         String[] titleWords = null;
         String[] bodyWords = null;
         if (mm.getTitle() != null) {
